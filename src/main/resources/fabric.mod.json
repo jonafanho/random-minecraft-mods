@@ -16,10 +16,12 @@
 	"entrypoints": {
 		"main": [
 			"random.Main"
+		],
+		"client": [
+			"random.MainClient"
 		]
 	},
 	"mixins": [
-		"modid.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.14.6",
