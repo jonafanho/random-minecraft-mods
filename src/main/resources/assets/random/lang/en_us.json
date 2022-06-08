@@ -1,4 +1,10 @@
 {
 	"block.random.item_structurifier": "Item Structurifier",
-	"gui.random.item_structurifier": "Item Structurifier"
+	"gui.random.item_structurifier": "Item Structurifier",
+	"item.random.rainbow_wool_axe": "Rainbow Wool Axe",
+	"item.random.rainbow_wool_boots": "Rainbow Wool Boots",
+	"item.random.rainbow_wool_chestplate": "Rainbow Wool Chestplate",
+	"item.random.rainbow_wool_fish": "Rainbow Wool Fish",
+	"item.random.rainbow_wool_helmet": "Rainbow Wool Helmet",
+	"item.random.rainbow_wool_trident": "Rainbow Wool Trident"
 }
