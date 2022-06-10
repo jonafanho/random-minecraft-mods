@@ -1,0 +1,5 @@
+{
+	"variants": {
+		"": { "model": "random:block/big_explosive" }
+	}
+}

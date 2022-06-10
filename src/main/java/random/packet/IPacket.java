@@ -5,7 +5,7 @@ import random.Main;
 
 public interface IPacket {
 
-	Identifier PACKET_OPEN_ITEM_STRUCTURIFIER_SCREEN = new Identifier(Main.MOD_ID, "packet_open_item_structurifier_screen");
+	Identifier PACKET_TOGGLE_LAVA_BOSS = new Identifier(Main.MOD_ID, "packet_toggle_lava_boss");
 
 	int MAX_PACKET_BYTES = 1048576;
 }

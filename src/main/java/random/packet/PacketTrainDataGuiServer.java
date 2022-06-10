@@ -7,8 +7,10 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 public class PacketTrainDataGuiServer implements IPacket {
 
-	public static void openItemStructurifierScreenS2C(ServerPlayerEntity player) {
+	public static void toggleLavaBossS2C(ServerPlayerEntity player, boolean isLavaBoss) {
 		final PacketByteBuf packet = PacketByteBufs.create();
-		ServerPlayNetworking.send(player, PACKET_OPEN_ITEM_STRUCTURIFIER_SCREEN, packet);
+		packet.writeUuid(player.getUuid());
+		packet.writeBoolean(isLavaBoss);
+		ServerPlayNetworking.send(player, PACKET_TOGGLE_LAVA_BOSS, packet);
 	}
 }

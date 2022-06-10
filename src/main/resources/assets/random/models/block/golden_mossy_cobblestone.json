@@ -1,0 +1,6 @@
+{
+	"parent": "block/cube_all",
+	"textures": {
+		"all": "random:block/golden_mossy_cobblestone"
+	}
+}
