@@ -14,34 +14,19 @@ public class ItemStructurifierScreenHandler extends ScreenHandler {
 
 	private final Inventory input;
 	private final Inventory output;
+	private final Slot inputSlot;
+	private final Slot outputSlot;
 
 	public ItemStructurifierScreenHandler(int syncId, PlayerInventory playerInventory) {
 		super(ScreenHandlers.ITEM_STRUCTURIFIER_SCREEN_HANDLER, syncId);
-		input = new SimpleInventory(1) {
-			@Override
-			public void markDirty() {
-				super.markDirty();
-
-			}
-		};
+		input = new SimpleInventory(1);
 		output = new CraftingResultInventory();
 
-		addSlot(new Slot(input, 0, 20, 33));
-		addSlot(new Slot(output, 1, 143, 33) {
+		inputSlot = addSlot(new Slot(input, 0, 20, 33));
+		outputSlot = addSlot(new Slot(output, 1, 143, 33) {
 			@Override
 			public boolean canInsert(ItemStack stack) {
 				return false;
-			}
-
-			@Override
-			public void onTakeItem(PlayerEntity player, ItemStack stack) {
-				stack.onCraft(player.world, player, stack.getCount());
-//				output.unlockLastRecipe(player);
-//				ItemStack itemStack = ItemStructurifierScreenHandler.this.inputSlot.takeStack(1);
-//				if (!itemStack.isEmpty()) {
-//					ItemStructurifierScreenHandler.this.populateResult();
-//				}
-				super.onTakeItem(player, stack);
 			}
 		});
 		for (int i = 0; i < 3; ++i) {
@@ -56,7 +41,7 @@ public class ItemStructurifierScreenHandler extends ScreenHandler {
 
 	@Override
 	public boolean canUse(PlayerEntity player) {
-		return input.canPlayerUse(player);
+		return input.canPlayerUse(player) || output.canPlayerUse(player);
 	}
 
 	@Override
@@ -66,8 +51,8 @@ public class ItemStructurifierScreenHandler extends ScreenHandler {
 		if (slot.hasStack()) {
 			final ItemStack originalStack = slot.getStack();
 			newStack = originalStack.copy();
-			if (index < input.size()) {
-				if (!insertItem(originalStack, input.size(), slots.size(), true)) {
+			if (index < 2) {
+				if (!insertItem(originalStack, 2, slots.size(), true)) {
 					return ItemStack.EMPTY;
 				}
 			} else if (!insertItem(originalStack, 0, input.size(), false)) {
@@ -82,5 +67,11 @@ public class ItemStructurifierScreenHandler extends ScreenHandler {
 		}
 
 		return newStack;
+	}
+
+	public void generate() {
+		outputSlot.setStack(new ItemStack(inputSlot.getStack().getItem()));
+		inputSlot.getStack().decrement(1);
+		sendContentUpdates();
 	}
 }

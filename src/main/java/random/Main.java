@@ -3,10 +3,13 @@ package random;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.entity.boss.BossBarManager;
 import net.minecraft.entity.boss.CommandBossBar;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -21,12 +24,14 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import random.entity.EntityStoneVillager;
+import random.fluid.FluidBreadLiquid;
+import random.packet.IPacket;
 import random.packet.PacketTrainDataGuiServer;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class Main implements ModInitializer {
+public class Main implements ModInitializer, IPacket {
 
 	private static CommandBossBar lavaBossBar;
 
@@ -87,6 +92,8 @@ public class Main implements ModInitializer {
 			dispatcher.register(CommandManager.literal("dirtpenguin").executes(Commands.DIRT_PENGUIN));
 		});
 
+		ServerPlayNetworking.registerGlobalReceiver(PACKET_GENERATE_STRUCTURE, (minecraftServer, player, handler, packet, sender) -> PacketTrainDataGuiServer.generateStructureC2S(minecraftServer, player, packet));
+
 		ServerTickEvents.END_WORLD_TICK.register(world -> world.getPlayers().forEach(player -> {
 			if (LAVA_BOSSES.contains(player)) {
 				world.spawnParticles(ParticleTypes.FLAME, player.getX(), player.getY(), player.getZ(), 10, 1, 1, 1, 0.01);
@@ -94,6 +101,12 @@ public class Main implements ModInitializer {
 				if (world.getBlockState(pos.down()).hasSolidTopSurface(world, pos.down(), player)) {
 					world.setBlockState(pos, net.minecraft.block.Blocks.FIRE.getDefaultState());
 				}
+			}
+
+			final Fluid fluid1 = world.getFluidState(player.getBlockPos()).getFluid();
+			final Fluid fluid2 = world.getFluidState(player.getBlockPos().up()).getFluid();
+			if (fluid1 instanceof FluidBreadLiquid || fluid2 instanceof FluidBreadLiquid) {
+				player.addStatusEffect(new StatusEffectInstance(StatusEffects.SATURATION, 10, 0, false, false, true));
 			}
 		}));
 	}
