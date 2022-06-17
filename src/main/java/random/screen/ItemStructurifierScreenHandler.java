@@ -5,20 +5,29 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.slot.Slot;
+import random.Main;
 import random.ScreenHandlers;
 
 public class ItemStructurifierScreenHandler extends ScreenHandler {
 
+	private final ScreenHandlerContext context;
 	private final Inventory input;
 	private final Inventory output;
 	private final Slot inputSlot;
 	private final Slot outputSlot;
 
 	public ItemStructurifierScreenHandler(int syncId, PlayerInventory playerInventory) {
+		this(syncId, playerInventory, ScreenHandlerContext.EMPTY);
+	}
+
+	public ItemStructurifierScreenHandler(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context) {
 		super(ScreenHandlers.ITEM_STRUCTURIFIER_SCREEN_HANDLER, syncId);
+		this.context = context;
 		input = new SimpleInventory(1);
 		output = new CraftingResultInventory();
 
@@ -69,9 +78,21 @@ public class ItemStructurifierScreenHandler extends ScreenHandler {
 		return newStack;
 	}
 
+	@Override
+	public void close(PlayerEntity player) {
+		super.close(player);
+		output.removeStack(1);
+		context.run((world, pos) -> dropInventory(player, input));
+	}
+
 	public void generate() {
-		outputSlot.setStack(new ItemStack(inputSlot.getStack().getItem()));
-		inputSlot.getStack().decrement(1);
+		final Item inputItem = inputSlot.getStack().getItem();
+		if (Main.RECIPES.containsKey(inputItem)) {
+			outputSlot.setStack(new ItemStack(Main.RECIPES.get(inputItem)));
+			inputSlot.getStack().decrement(1);
+		} else {
+			outputSlot.setStack(ItemStack.EMPTY);
+		}
 		sendContentUpdates();
 	}
 }

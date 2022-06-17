@@ -16,7 +16,7 @@ import java.util.Random;
 
 public class EntityStoneVillager extends VillagerEntity {
 
-	private static Item[] ITEMS = {
+	private static final Item[] ITEMS = {
 			Items.IRON_INGOT,
 			Blocks.IRON_ORE.asItem(),
 			Items.GOLD_INGOT,

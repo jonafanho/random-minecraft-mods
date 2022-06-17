@@ -6,6 +6,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.boss.BossBarManager;
 import net.minecraft.entity.boss.CommandBossBar;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -21,6 +23,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import random.entity.EntityStoneVillager;
@@ -28,20 +31,53 @@ import random.fluid.FluidBreadLiquid;
 import random.packet.IPacket;
 import random.packet.PacketTrainDataGuiServer;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class Main implements ModInitializer, IPacket {
 
 	private static CommandBossBar lavaBossBar;
 
+	public static final Map<Item, Item> RECIPES = new HashMap<>();
+	public static final Map<TntEntity, Integer> EXPLOSION_STRENGTH = new HashMap<>();
+
 	private static final Set<ServerPlayerEntity> LAVA_BOSSES = new HashSet<>();
 	private static final Set<ServerPlayerEntity> BREADS = new HashSet<>();
+	private static final Map<ItemEntity, Integer> ITEM_ENTITY_COOL_DOWNS = new HashMap<>();
+
+	static {
+		RECIPES.put(net.minecraft.block.Blocks.WHITE_WOOL.asItem(), Items.STRUCTURE_WHITE_WOOL);
+		RECIPES.put(net.minecraft.block.Blocks.COBBLESTONE.asItem(), Items.STRUCTURE_COBBLESTONE);
+		RECIPES.put(net.minecraft.item.Items.LAVA_BUCKET, Items.STRUCTURE_LAVA);
+		RECIPES.put(net.minecraft.item.Items.BREAD, Items.STRUCTURE_BREAD);
+		RECIPES.put(net.minecraft.block.Blocks.TNT.asItem(), Items.STRUCTURE_TNT);
+		RECIPES.put(net.minecraft.block.Blocks.OAK_LOG.asItem(), Items.STRUCTURE_OAK_LOG);
+		RECIPES.put(net.minecraft.block.Blocks.IRON_ORE.asItem(), Items.STRUCTURE_IRON_ORE);
+		RECIPES.put(net.minecraft.item.Items.GOLD_INGOT, Items.STRUCTURE_GOLD_INGOT);
+		RECIPES.put(net.minecraft.block.Blocks.LILY_PAD.asItem(), Items.STRUCTURE_LILY_PAD);
+		RECIPES.put(net.minecraft.item.Items.DIAMOND, Items.STRUCTURE_DIAMOND);
+		RECIPES.put(net.minecraft.item.Items.DIAMOND_LEGGINGS, Items.STRUCTURE_DIAMOND_LEGGINGS);
+		RECIPES.put(net.minecraft.block.Blocks.DIRT.asItem(), Items.STRUCTURE_DIRT);
+	}
 
 	public static final String MOD_ID = "random";
 
 	@Override
 	public void onInitialize() {
+		registerItem("structure_white_wool", Items.STRUCTURE_WHITE_WOOL);
+		registerItem("structure_cobblestone", Items.STRUCTURE_COBBLESTONE);
+		registerItem("structure_lava", Items.STRUCTURE_LAVA);
+		registerItem("structure_bread", Items.STRUCTURE_BREAD);
+		registerItem("structure_tnt", Items.STRUCTURE_TNT);
+		registerItem("structure_oak_log", Items.STRUCTURE_OAK_LOG);
+		registerItem("structure_iron_ore", Items.STRUCTURE_IRON_ORE);
+		registerItem("structure_gold_ingot", Items.STRUCTURE_GOLD_INGOT);
+		registerItem("structure_lily_pad", Items.STRUCTURE_LILY_PAD);
+		registerItem("structure_diamond", Items.STRUCTURE_DIAMOND);
+		registerItem("structure_diamond_leggings", Items.STRUCTURE_DIAMOND_LEGGINGS);
+		registerItem("structure_dirt", Items.STRUCTURE_DIRT);
 		registerItem("rainbow_wool_helmet", Items.RAINBOW_WOOL_HELMET);
 		registerItem("rainbow_wool_chestplate", Items.RAINBOW_WOOL_CHESTPLATE);
 		registerItem("rainbow_wool_boots", Items.RAINBOW_WOOL_BOOTS);
@@ -94,21 +130,36 @@ public class Main implements ModInitializer, IPacket {
 
 		ServerPlayNetworking.registerGlobalReceiver(PACKET_GENERATE_STRUCTURE, (minecraftServer, player, handler, packet, sender) -> PacketTrainDataGuiServer.generateStructureC2S(minecraftServer, player, packet));
 
-		ServerTickEvents.END_WORLD_TICK.register(world -> world.getPlayers().forEach(player -> {
-			if (LAVA_BOSSES.contains(player)) {
-				world.spawnParticles(ParticleTypes.FLAME, player.getX(), player.getY(), player.getZ(), 10, 1, 1, 1, 0.01);
-				final BlockPos pos = player.getBlockPos();
-				if (world.getBlockState(pos.down()).hasSolidTopSurface(world, pos.down(), player)) {
-					world.setBlockState(pos, net.minecraft.block.Blocks.FIRE.getDefaultState());
+		ServerTickEvents.END_WORLD_TICK.register(world -> {
+			world.getPlayers().forEach(player -> {
+				if (LAVA_BOSSES.contains(player)) {
+					world.spawnParticles(ParticleTypes.FLAME, player.getX(), player.getY(), player.getZ(), 10, 1, 1, 1, 0.01);
+					final BlockPos pos = player.getBlockPos();
+					if (world.getBlockState(pos.down()).hasSolidTopSurface(world, pos.down(), player)) {
+						world.setBlockState(pos, net.minecraft.block.Blocks.FIRE.getDefaultState());
+					}
 				}
-			}
 
-			final Fluid fluid1 = world.getFluidState(player.getBlockPos()).getFluid();
-			final Fluid fluid2 = world.getFluidState(player.getBlockPos().up()).getFluid();
-			if (fluid1 instanceof FluidBreadLiquid || fluid2 instanceof FluidBreadLiquid) {
-				player.addStatusEffect(new StatusEffectInstance(StatusEffects.SATURATION, 10, 0, false, false, true));
-			}
-		}));
+				final Fluid fluid1 = world.getFluidState(player.getBlockPos()).getFluid();
+				final Fluid fluid2 = world.getFluidState(player.getBlockPos().up()).getFluid();
+				if (fluid1 instanceof FluidBreadLiquid || fluid2 instanceof FluidBreadLiquid) {
+					player.addStatusEffect(new StatusEffectInstance(StatusEffects.SATURATION, 10, 0, false, false, true));
+				}
+			});
+
+			world.getEntitiesByType(TypeFilter.instanceOf(ItemEntity.class), itemEntity -> RECIPES.containsKey(itemEntity.getStack().getItem())).forEach(itemEntity -> {
+				if (!ITEM_ENTITY_COOL_DOWNS.containsKey(itemEntity)) {
+					ITEM_ENTITY_COOL_DOWNS.put(itemEntity, 40);
+				}
+				if (ITEM_ENTITY_COOL_DOWNS.get(itemEntity) <= 0) {
+					world.setBlockState(itemEntity.getBlockPos(), net.minecraft.block.Blocks.IRON_BLOCK.getDefaultState());
+					itemEntity.kill();
+					ITEM_ENTITY_COOL_DOWNS.remove(itemEntity);
+				} else {
+					ITEM_ENTITY_COOL_DOWNS.put(itemEntity, ITEM_ENTITY_COOL_DOWNS.get(itemEntity) - 1);
+				}
+			});
+		});
 	}
 
 	public static void toggleLavaBoss(ServerWorld world, ServerPlayerEntity player) {

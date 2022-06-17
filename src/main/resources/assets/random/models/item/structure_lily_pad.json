@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "random:item/bucket_bread_liquid"
+		"layer0": "random:item/structure_lily_pad"
 	}
 }
