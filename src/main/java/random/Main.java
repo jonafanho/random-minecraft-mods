@@ -6,6 +6,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.boss.BossBarManager;
@@ -26,6 +28,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import random.block.BlockExplosive;
+import random.entity.EntitySnowYeti;
 import random.entity.EntityStoneVillager;
 import random.fluid.FluidBreadLiquid;
 import random.packet.IPacket;
@@ -41,11 +45,12 @@ public class Main implements ModInitializer, IPacket {
 	private static CommandBossBar lavaBossBar;
 
 	public static final Map<Item, Item> RECIPES = new HashMap<>();
-	public static final Map<TntEntity, Integer> EXPLOSION_STRENGTH = new HashMap<>();
+	public static final Map<TntEntity, BlockExplosive.ExplosionDetails> EXPLOSIONS = new HashMap<>();
 
 	private static final Set<ServerPlayerEntity> LAVA_BOSSES = new HashSet<>();
 	private static final Set<ServerPlayerEntity> BREADS = new HashSet<>();
 	private static final Map<ItemEntity, Integer> ITEM_ENTITY_COOL_DOWNS = new HashMap<>();
+	private static final Map<ServerWorld, BlockPos> IRON_ENDS = new HashMap<>();
 
 	static {
 		RECIPES.put(net.minecraft.block.Blocks.WHITE_WOOL.asItem(), Items.STRUCTURE_WHITE_WOOL);
@@ -87,6 +92,7 @@ public class Main implements ModInitializer, IPacket {
 		registerItem("fire", Items.FIRE);
 		registerItem("bucket_bread_liquid", Items.BUCKET_BREAD_LIQUID);
 		registerItem("rocket_caller", Items.ROCKET_CALLER);
+		registerItem("new_ender_eye", Items.NEW_ENDER_EYE);
 		registerItem("winter_coat", Items.WINTER_COAT);
 		registerItem("ice_pants", Items.ICE_PANTS);
 
@@ -97,6 +103,8 @@ public class Main implements ModInitializer, IPacket {
 		registerBlock("nuke", Blocks.NUKE, ItemGroup.MISC);
 		registerBlock("fake_tnt", Blocks.FAKE_TNT, ItemGroup.MISC);
 		registerBlock("yellow_tnt", Blocks.YELLOW_TNT, ItemGroup.MISC);
+		registerBlock("iron_end_portal_frame", Blocks.IRON_END_PORTAL_FRAME, ItemGroup.MISC);
+		registerBlock("iron_end_portal", Blocks.IRON_END_PORTAL);
 		registerBlock("iron_stone_bricks", Blocks.IRON_STONE_BRICKS, ItemGroup.MISC);
 		registerBlock("golden_mossy_cobblestone", Blocks.GOLDEN_MOSSY_COBBLESTONE, ItemGroup.MISC);
 		registerBlock("lily_pad_deco", Blocks.LILY_PAD_DECO, ItemGroup.MISC);
@@ -105,9 +113,13 @@ public class Main implements ModInitializer, IPacket {
 		registerFluid("bread_liquid_still", Fluids.BREAD_LIQUID_STILL);
 		registerFluid("bread_liquid_flow", Fluids.BREAD_LIQUID_FLOWING);
 
+		registerBlockEntityType("iron_end_portal", BlockEntityTypes.IRON_END_PORTAL);
+
 		registerParticle("rainbow", Particles.RAINBOW);
 
 		FabricDefaultAttributeRegistry.register(EntityTypes.STONE_VILLAGER, EntityStoneVillager.createVillagerAttributes());
+		FabricDefaultAttributeRegistry.register(EntityTypes.SNOW_YETI, EntitySnowYeti.createSnowYetiAttributes());
+
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
 			dispatcher.register(CommandManager.literal("stonevillagers").executes(Commands.STONE_VILLAGERS));
 			dispatcher.register(CommandManager.literal("lavaboss").executes(Commands.LAVA_BOSS));
@@ -185,6 +197,14 @@ public class Main implements ModInitializer, IPacket {
 		}
 	}
 
+	public static BlockPos getIronEnd(ServerWorld world) {
+		return IRON_ENDS.getOrDefault(world, null);
+	}
+
+	public static void setIronEnd(ServerWorld world, BlockPos pos) {
+		IRON_ENDS.put(world, pos);
+	}
+
 	private static void registerItem(String path, Item item) {
 		Registry.register(Registry.ITEM, new Identifier(MOD_ID, path), item);
 	}
@@ -196,6 +216,10 @@ public class Main implements ModInitializer, IPacket {
 	private static void registerBlock(String path, Block block, ItemGroup itemGroup) {
 		registerBlock(path, block);
 		Registry.register(Registry.ITEM, new Identifier(MOD_ID, path), new BlockItem(block, new Item.Settings().group(itemGroup)));
+	}
+
+	private static void registerBlockEntityType(String path, BlockEntityType<? extends BlockEntity> blockEntityType) {
+		Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(MOD_ID, path), blockEntityType);
 	}
 
 	private static void registerFluid(String path, Fluid fluid) {

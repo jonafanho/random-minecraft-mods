@@ -16,11 +16,13 @@ public class BlockExplosive extends TntBlock {
 
 	private final int strength;
 	private final boolean hasFire;
+	private final boolean throwBlocks;
 
-	public BlockExplosive(Settings settings, int strength, boolean hasFire) {
+	public BlockExplosive(Settings settings, int strength, boolean hasFire, boolean throwBlocks) {
 		super(settings);
 		this.strength = strength;
 		this.hasFire = hasFire;
+		this.throwBlocks = throwBlocks;
 	}
 
 	@Override
@@ -31,8 +33,11 @@ public class BlockExplosive extends TntBlock {
 			world.spawnEntity(tntEntity);
 			world.playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS, 1, 1);
 			world.emitGameEvent(null, GameEvent.PRIME_FUSE, pos);
-			Main.EXPLOSION_STRENGTH.put(tntEntity, strength * (hasFire ? -1 : 1));
+			Main.EXPLOSIONS.put(tntEntity, new ExplosionDetails(strength, hasFire, throwBlocks));
 			world.removeBlock(pos, false);
 		}
+	}
+
+	public record ExplosionDetails(int strength, boolean hasFire, boolean throwBlocks) {
 	}
 }

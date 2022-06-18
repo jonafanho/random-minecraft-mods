@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
@@ -13,11 +14,14 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.particle.FlameParticle;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.block.entity.EndPortalBlockEntityRenderer;
+import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 import net.minecraft.client.render.entity.VillagerEntityRenderer;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
 import random.packet.IPacket;
+import random.render.RenderSnowYeti;
 import random.screen.ItemStructurifierScreen;
 
 import java.util.HashSet;
@@ -32,6 +36,10 @@ public class MainClient implements ClientModInitializer, IPacket {
 	@Override
 	public void onInitializeClient() {
 		EntityRendererRegistry.register(EntityTypes.STONE_VILLAGER, VillagerEntityRenderer::new);
+		EntityRendererRegistry.register(EntityTypes.SNOW_YETI, RenderSnowYeti::new);
+		EntityRendererRegistry.register(EntityTypes.HARD_SNOWBALL, FlyingItemEntityRenderer::new);
+
+		BlockEntityRendererRegistry.register(BlockEntityTypes.IRON_END_PORTAL, EndPortalBlockEntityRenderer::new);
 
 		ScreenRegistry.register(ScreenHandlers.ITEM_STRUCTURIFIER_SCREEN_HANDLER, ItemStructurifierScreen::new);
 		ClientPlayNetworking.registerGlobalReceiver(PACKET_TOGGLE_LAVA_BOSS, (minecraftClient, handler, packet, sender) -> toggleLavaBossS2C(minecraftClient, packet));

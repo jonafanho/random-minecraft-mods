@@ -1,11 +1,13 @@
 package random;
 
 import com.mojang.brigadier.Command;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.WaterFluid;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import random.entity.EntityStoneVillager;
 
@@ -55,15 +57,38 @@ public interface Commands {
 		return 0;
 	};
 	Command<ServerCommandSource> FAKE_TNT = context -> {
+		final ServerCommandSource source = context.getSource();
+		final ServerWorld world = source.getWorld();
+		iterateInRadius(source.getPlayer().getBlockPos(), 50, pos -> {
+			if (world.getBlockState(pos).getBlock() == net.minecraft.block.Blocks.RED_CONCRETE) {
+				world.setBlockState(pos, Blocks.FAKE_TNT.getDefaultState());
+			}
+		});
 		return 0;
 	};
 	Command<ServerCommandSource> TNT_2 = context -> {
+		final ServerCommandSource source = context.getSource();
+		final ServerWorld world = source.getWorld();
+		iterateInRadius(source.getPlayer().getBlockPos(), 50, pos -> {
+			if (world.getBlockState(pos).getBlock() == net.minecraft.block.Blocks.PINK_CONCRETE) {
+				world.setBlockState(pos, Blocks.YELLOW_TNT.getDefaultState());
+			}
+		});
 		return 0;
 	};
 	Command<ServerCommandSource> OAK_YETI = context -> {
+		final ServerCommandSource source = context.getSource();
+		final ServerWorld world = source.getWorld();
+		final ServerPlayerEntity player = source.getPlayer();
+		EntityTypes.SNOW_YETI.spawn(world, null, null, player, player.getBlockPos(), SpawnReason.COMMAND, false, false);
 		return 0;
 	};
 	Command<ServerCommandSource> IRON_END = context -> {
+		final ServerCommandSource source = context.getSource();
+		final ServerPlayerEntity player = source.getPlayer();
+		final BlockPos pos = player.getBlockPos();
+		Main.setIronEnd(source.getWorld(), pos);
+		player.sendMessage(new TranslatableText("gui.random.iron_end_portal_set", pos.getX(), pos.getY(), pos.getZ()), false);
 		return 0;
 	};
 	Command<ServerCommandSource> IRON_BOSS = context -> {

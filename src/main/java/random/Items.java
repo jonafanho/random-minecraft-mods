@@ -2,10 +2,7 @@ package random;
 
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.*;
-import random.item.ItemRainbowWoolAxe;
-import random.item.ItemRainbowWoolBoots;
-import random.item.ItemRainbowWoolTrident;
-import random.item.ItemRocketCaller;
+import random.item.*;
 
 public interface Items {
 
@@ -30,6 +27,7 @@ public interface Items {
 	Item FIRE = new FireChargeItem(new Item.Settings().group(ItemGroup.MISC));
 	Item BUCKET_BREAD_LIQUID = new BucketItem(Fluids.BREAD_LIQUID_STILL, new Item.Settings().recipeRemainder(net.minecraft.item.Items.BUCKET).maxCount(1));
 	Item ROCKET_CALLER = new ItemRocketCaller(new Item.Settings().group(ItemGroup.COMBAT));
+	Item NEW_ENDER_EYE = new ItemNewEnderEye(new Item.Settings().group(ItemGroup.MISC));
 	Item WINTER_COAT = new ArmorItem(ArmorMaterials.DIAMOND, EquipmentSlot.CHEST, new Item.Settings().group(ItemGroup.COMBAT));
 	Item ICE_PANTS = new ArmorItem(ArmorMaterials.LEATHER, EquipmentSlot.LEGS, new Item.Settings().group(ItemGroup.COMBAT));
 }
