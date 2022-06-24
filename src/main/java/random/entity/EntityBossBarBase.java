@@ -9,7 +9,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 
-public class EntityBossBarBase extends HostileEntity {
+public abstract class EntityBossBarBase extends HostileEntity {
 
 	private final ServerBossBar bossBar;
 

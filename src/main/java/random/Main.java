@@ -29,6 +29,7 @@ import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import random.block.BlockExplosive;
+import random.entity.EntityMegaIronGolem;
 import random.entity.EntitySnowYeti;
 import random.entity.EntityStoneVillager;
 import random.fluid.FluidBreadLiquid;
@@ -119,6 +120,7 @@ public class Main implements ModInitializer, IPacket {
 
 		FabricDefaultAttributeRegistry.register(EntityTypes.STONE_VILLAGER, EntityStoneVillager.createVillagerAttributes());
 		FabricDefaultAttributeRegistry.register(EntityTypes.SNOW_YETI, EntitySnowYeti.createSnowYetiAttributes());
+		FabricDefaultAttributeRegistry.register(EntityTypes.MEGA_IRON_GOLEM, EntityMegaIronGolem.createMegaIronGolemAttributes());
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
 			dispatcher.register(CommandManager.literal("stonevillagers").executes(Commands.STONE_VILLAGERS));
@@ -141,6 +143,7 @@ public class Main implements ModInitializer, IPacket {
 		});
 
 		ServerPlayNetworking.registerGlobalReceiver(PACKET_GENERATE_STRUCTURE, (minecraftServer, player, handler, packet, sender) -> PacketTrainDataGuiServer.generateStructureC2S(minecraftServer, player, packet));
+		ServerPlayNetworking.registerGlobalReceiver(PACKET_LAUNCH_ROCKET, (minecraftServer, player, handler, packet, sender) -> PacketTrainDataGuiServer.launchRocketC2S(minecraftServer, player, packet));
 
 		ServerTickEvents.END_WORLD_TICK.register(world -> {
 			world.getPlayers().forEach(player -> {

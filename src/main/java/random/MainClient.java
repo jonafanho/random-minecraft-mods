@@ -21,6 +21,9 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
 import random.packet.IPacket;
+import random.packet.PacketTrainDataGuiClient;
+import random.render.RenderMegaIronGolem;
+import random.render.RenderRocket;
 import random.render.RenderSnowYeti;
 import random.screen.ItemStructurifierScreen;
 
@@ -36,13 +39,16 @@ public class MainClient implements ClientModInitializer, IPacket {
 	@Override
 	public void onInitializeClient() {
 		EntityRendererRegistry.register(EntityTypes.STONE_VILLAGER, VillagerEntityRenderer::new);
+		EntityRendererRegistry.register(EntityTypes.ROCKET, RenderRocket::new);
 		EntityRendererRegistry.register(EntityTypes.SNOW_YETI, RenderSnowYeti::new);
 		EntityRendererRegistry.register(EntityTypes.HARD_SNOWBALL, FlyingItemEntityRenderer::new);
+		EntityRendererRegistry.register(EntityTypes.MEGA_IRON_GOLEM, RenderMegaIronGolem::new);
 
 		BlockEntityRendererRegistry.register(BlockEntityTypes.IRON_END_PORTAL, EndPortalBlockEntityRenderer::new);
 
 		ScreenRegistry.register(ScreenHandlers.ITEM_STRUCTURIFIER_SCREEN_HANDLER, ItemStructurifierScreen::new);
 		ClientPlayNetworking.registerGlobalReceiver(PACKET_TOGGLE_LAVA_BOSS, (minecraftClient, handler, packet, sender) -> toggleLavaBossS2C(minecraftClient, packet));
+		ClientPlayNetworking.registerGlobalReceiver(PACKET_OPEN_ROCKET_CALLER_SCREEN, (minecraftClient, handler, packet, sender) -> PacketTrainDataGuiClient.openRocketCallerScreenS2C(minecraftClient));
 
 		ClientSpriteRegistryCallback.event(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).register((atlasTexture, registry) -> {
 			registry.register(new Identifier(Main.MOD_ID, "particle/rainbow"));

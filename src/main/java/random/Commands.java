@@ -11,6 +11,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import random.entity.EntityStoneVillager;
 
+import java.util.Random;
 import java.util.function.Consumer;
 
 public interface Commands {
@@ -92,9 +93,20 @@ public interface Commands {
 		return 0;
 	};
 	Command<ServerCommandSource> IRON_BOSS = context -> {
+		final ServerCommandSource source = context.getSource();
+		final ServerWorld world = source.getWorld();
+		final ServerPlayerEntity player = source.getPlayer();
+		EntityTypes.MEGA_IRON_GOLEM.spawn(world, null, null, player, player.getBlockPos(), SpawnReason.COMMAND, false, false);
 		return 0;
 	};
 	Command<ServerCommandSource> IRON_BRICKS = context -> {
+		final ServerCommandSource source = context.getSource();
+		final ServerWorld world = source.getWorld();
+		iterateInRadius(source.getPlayer().getBlockPos(), 60, pos -> {
+			if (world.getBlockState(pos).isFullCube(world, pos) && new Random().nextBoolean()) {
+				world.setBlockState(pos, Blocks.IRON_STONE_BRICKS.getDefaultState());
+			}
+		});
 		return 0;
 	};
 	Command<ServerCommandSource> GOLD_MOSS = context -> {
